@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Consonant {
+  id        String   @id @default(cuid())
+  letter    String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  words     Word[]
+
+  @@map("consonants")
+}
+
+model Word {
+  id          String    @id @default(cuid())
+  text        String
+  syllables   Int
+  difficulty  Int       @default(1) // 1-5 scale
+  consonantId String
+  consonant   Consonant @relation(fields: [consonantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("words")
+}
+
+model UserProgress {
+  id              String   @id @default(cuid())
+  sessionId       String
+  consonantId     String
+  wordsCompleted  Int      @default(0)
+  totalWords      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_progress")
+}
