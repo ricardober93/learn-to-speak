@@ -85,7 +85,7 @@ export class WordEngine {
     }
     
     // Obtener palabras existentes de la base de datos
-    let existingWords = await prisma.word.findMany({
+    const existingWords = await prisma.word.findMany({
       where: {
         consonantId: validatedOptions.consonantId,
         ...(validatedOptions.syllableCount && { syllables: validatedOptions.syllableCount }),
@@ -117,7 +117,7 @@ export class WordEngine {
             include: { consonant: true }
           });
           existingWords.push(newWord);
-        } catch (error) {
+        } catch {
           // Ignorar duplicados
           console.warn(`Palabra duplicada: ${wordData.text}`);
         }

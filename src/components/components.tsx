@@ -145,7 +145,7 @@ export function WordList({ words, consonant, onBack }: WordListProps) {
           
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-800 mb-2">
-              Palabras con "{consonant.letter}"
+              Palabras con &quot;{consonant.letter}&quot;
             </h1>
             <p className="text-lg text-gray-600">
               Progreso: {completedWords.size} de {words.length} palabras
@@ -179,7 +179,7 @@ export function WordList({ words, consonant, onBack }: WordListProps) {
               ¡Felicitaciones! 🎉
             </h2>
             <p className="text-xl text-green-700">
-              Has completado todas las palabras con la consonante "{consonant.letter}"
+              Has completado todas las palabras con la consonante &quot;{consonant.letter}&quot;
             </p>
           </div>
         )}
