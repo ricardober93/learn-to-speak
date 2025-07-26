@@ -233,4 +233,155 @@ export class WordEngine {
       });
     }
   }
+
+  /**
+   * Guarda el progreso del usuario (autenticado o anónimo)
+   */
+  static async saveUserProgress({
+    userId,
+    sessionId,
+    consonantId,
+    wordsCompleted,
+    totalWords
+  }: {
+    userId?: string;
+    sessionId: string;
+    consonantId: string;
+    wordsCompleted: number;
+    totalWords: number;
+  }) {
+    // Buscar progreso existente
+    const existingProgress = await prisma.userProgress.findFirst({
+      where: {
+        ...(userId ? { userId } : { sessionId, userId: null }),
+        consonantId
+      }
+    });
+
+    if (existingProgress) {
+      // Actualizar progreso existente
+      return await prisma.userProgress.update({
+        where: { id: existingProgress.id },
+        data: {
+          wordsCompleted,
+          totalWords,
+          updatedAt: new Date()
+        }
+      });
+    } else {
+      // Crear nuevo progreso
+      return await prisma.userProgress.create({
+        data: {
+          userId,
+          sessionId,
+          consonantId,
+          wordsCompleted,
+          totalWords
+        }
+      });
+    }
+  }
+
+  /**
+   * Obtiene el progreso del usuario para una consonante específica
+   */
+  static async getUserProgress({
+    userId,
+    sessionId,
+    consonantId
+  }: {
+    userId?: string;
+    sessionId: string;
+    consonantId: string;
+  }) {
+    return await prisma.userProgress.findFirst({
+      where: {
+        ...(userId ? { userId } : { sessionId, userId: null }),
+        consonantId
+      },
+      include: {
+        user: true
+      }
+    });
+  }
+
+  /**
+   * Obtiene todo el progreso del usuario
+   */
+  static async getAllUserProgress({
+    userId,
+    sessionId
+  }: {
+    userId?: string;
+    sessionId: string;
+  }) {
+    return await prisma.userProgress.findMany({
+      where: {
+        ...(userId ? { userId } : { sessionId, userId: null })
+      },
+      include: {
+        user: true
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+  }
+
+  /**
+   * Migra el progreso de una sesión anónima a un usuario autenticado
+   */
+  static async migrateAnonymousProgress({
+    sessionId,
+    userId
+  }: {
+    sessionId: string;
+    userId: string;
+  }) {
+    // Buscar progreso anónimo
+    const anonymousProgress = await prisma.userProgress.findMany({
+      where: {
+        sessionId,
+        userId: null
+      }
+    });
+
+    // Migrar cada progreso
+    for (const progress of anonymousProgress) {
+      // Verificar si ya existe progreso para este usuario y consonante
+      const existingUserProgress = await prisma.userProgress.findFirst({
+        where: {
+          userId,
+          consonantId: progress.consonantId
+        }
+      });
+
+      if (existingUserProgress) {
+        // Si existe, mantener el mejor progreso
+        if (progress.wordsCompleted > existingUserProgress.wordsCompleted) {
+          await prisma.userProgress.update({
+            where: { id: existingUserProgress.id },
+            data: {
+              wordsCompleted: progress.wordsCompleted,
+              totalWords: progress.totalWords,
+              updatedAt: new Date()
+            }
+          });
+        }
+        // Eliminar el progreso anónimo
+        await prisma.userProgress.delete({
+          where: { id: progress.id }
+        });
+      } else {
+        // Si no existe, actualizar el progreso anónimo con el userId
+        await prisma.userProgress.update({
+          where: { id: progress.id },
+          data: {
+            userId,
+            updatedAt: new Date()
+          }
+        });
+      }
+    }
+  }
 }

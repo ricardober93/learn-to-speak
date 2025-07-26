@@ -6,21 +6,41 @@ import { Consonant, Word } from '../lib/rules/types';
 interface ConsonantCardProps {
   consonant: Consonant;
   onClick: () => void;
+  onActivityClick?: (consonantId: string) => void;
+  isAuthenticated?: boolean;
 }
 
-export function ConsonantCard({ consonant, onClick }: ConsonantCardProps) {
+export function ConsonantCard({ consonant, onClick, onActivityClick, isAuthenticated }: ConsonantCardProps) {
   return (
-    <div 
-      onClick={onClick}
-      className="bg-white rounded-xl shadow-lg p-8 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-xl border-2 border-blue-100 hover:border-blue-300"
-    >
-      <div className="text-center">
-        <div className="text-6xl font-bold text-blue-600 mb-4">
+    <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-blue-100 hover:border-blue-300 transition-all duration-200">
+      <div className="text-center mb-4">
+        <div className="text-5xl font-bold text-blue-600 mb-3">
           {consonant.letter}
         </div>
-        <div className="text-xl text-gray-700 font-medium">
+        <div className="text-lg text-gray-700 font-medium">
           {consonant.name}
         </div>
+      </div>
+      
+      <div className="space-y-2">
+        <button
+          onClick={onClick}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+        >
+          Practicar Palabras
+        </button>
+        
+        {isAuthenticated && onActivityClick && (
+          <button
+            onClick={() => onActivityClick(consonant.id)}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Actividad Interactiva
+          </button>
+        )}
       </div>
     </div>
   );
@@ -29,30 +49,32 @@ export function ConsonantCard({ consonant, onClick }: ConsonantCardProps) {
 interface ConsonantSelectorProps {
   consonants: Consonant[];
   onSelect: (consonant: Consonant) => void;
+  onActivityClick?: (consonantId: string) => void;
+  isAuthenticated?: boolean;
 }
 
-export function ConsonantSelector({ consonants, onSelect }: ConsonantSelectorProps) {
+export function ConsonantSelector({ consonants, onSelect, onActivityClick, isAuthenticated }: ConsonantSelectorProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            ¡Aprende a Leer!
-          </h1>
-          <p className="text-xl text-gray-600">
-            Selecciona una consonante para practicar palabras
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {consonants.map((consonant) => (
-            <ConsonantCard
-              key={consonant.id}
-              consonant={consonant}
-              onClick={() => onSelect(consonant)}
-            />
-          ))}
-        </div>
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-bold text-gray-800 mb-4">
+          ¡Aprende a Leer!
+        </h1>
+        <p className="text-xl text-gray-600">
+          Selecciona una consonante para practicar palabras{isAuthenticated ? ' o realizar actividades interactivas' : ''}
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {consonants.map((consonant) => (
+          <ConsonantCard
+            key={consonant.id}
+            consonant={consonant}
+            onClick={() => onSelect(consonant)}
+            onActivityClick={onActivityClick}
+            isAuthenticated={isAuthenticated}
+          />
+        ))}
       </div>
     </div>
   );
