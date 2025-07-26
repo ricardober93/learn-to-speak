@@ -18,9 +18,9 @@ interface RouteParams {
   };
 }
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(request: NextRequest, params: Promise<RouteParams>) {
   try {
-    const { sessionId } = params;
+    const { params: { sessionId } } = await params;
     
     // Verificar autenticación (opcional para usuarios anónimos)
     const session = await auth.api.getSession({
